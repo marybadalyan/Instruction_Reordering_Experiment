@@ -33,7 +33,7 @@ int using_ROB() {
     return a + b + c + d;
 }
 
-long long benchmark(int (*func)(),int iterations) {
+double benchmark(int (*func)(),int iterations) {
     zen::timer timer;
     timer.start();
     int result = 0;
@@ -55,8 +55,8 @@ int main(int argc,char* argv[]) {
     double ROB_disable = benchmark(not_using_ROB,iterations);
     double ROB_enable = benchmark(using_ROB,iterations);
 
-    zen::print(zen::color::red(std::format("| {:<24} | {:>12f} ns|\n","Not using ROB time: " , ROB_disable)));
-    zen::print(zen::color::green(std::format("| {:<24} | {:>12f} ns|\n","Using ROB time: " , ROB_enable)));
+    zen::print(zen::color::red(std::format("| {:<24} | {:>12.3f} ns|\n","Not using ROB time: " , ROB_disable)));
+    zen::print(zen::color::green(std::format("| {:<24} | {:>12.3f} ns|\n","Using ROB time: " , ROB_enable)));
     zen::print(zen::color::yellow(std::format("| {:<24} | {:>15.4f}|\n","Speedup Factor:" , ROB_enable / ROB_disable)));
 
     return 0;
