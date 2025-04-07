@@ -1,6 +1,6 @@
+
 # Instruction_Reordering_Experiment
 
-# Reorder Buffer (ROB)
 ## Overview
 
 The Reorder Buffer (ROB) is a critical hardware structure used in modern out-of-order CPUs to support instruction-level parallelism while maintaining correct program behavior. It enables the CPU to execute instructions out of order for performance, but commit (retire) them in program order to preserve precise exceptions and data correctness.
