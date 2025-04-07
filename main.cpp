@@ -4,105 +4,63 @@
 #include <windows.h>
 #include <vector>
 #include "kaizen.h"  
+#include <format>
 
-// Repeat work to make timing measurable
-const int ITERATIONS = 1'000'000;
+// Parse command-line arguments
+int process_args(int argc, char* argv[]) {
+    zen::cmd_args args(argv, argc);
+    auto iter_options = args.get_options("--iterations");
+
+    if (iter_options.empty()) {
+        zen::print("Error: --iterations  argument is absent, using default:iterations=1'000'000\n");
+        return {1000000}; // Increased defaults
+    }
+    return std::stoi(iter_options[0]);
+}
 
 int not_using_ROB() {
-    volatile int a = 5;
-    a *= 8;
-    a %= 9;
-    return a * 2;
+    volatile int a = 5, b = 3, c = 7, d = 2;
+    a *= b;
+    b %= c;
+    c += d;
+    d *= a;
+    return a + b + c + d;
 }
 
 int using_ROB() {
-    volatile int a = 5;
-    volatile int b = 3;
+    volatile int a = 5, b = 3, c = 7, d = 2;
     a *= 8;
     b %= 9;
-    return a + b;
+    c += 4;
+    d *= 3;
+    return a + b + c + d;
 }
 
-// Single-threaded benchmark
-long long benchmark_single_thread(int (*func)()) {
+long long benchmark(int (*func)(),int iterations) {
     zen::timer timer;
     timer.start();
     int result = 0;
-    for (int i = 0; i < ITERATIONS; i++) {
+    for (int i = 0; i < iterations; i++) {
         result += func();
     }
     timer.stop();
     return timer.duration<zen::timer::nsec>().count();
 }
 
-// Multi-threaded benchmark (2 threads on Core 0)
-long long benchmark_multi_thread(int (*func)()) {
-    const int thread_count = 2;
-    std::vector<std::thread> threads;
-    volatile int results[thread_count] = {0}; // Store results per thread
-    zen::timer timer;
-
-    // Create threads with a barrier to delay execution
-    std::vector<bool> ready(thread_count, false);
-    DWORD_PTR affinity_mask = 1; // Core 0
-
-    for (int t = 0; t < thread_count; t++) {
-        threads.emplace_back([&results, &ready, t, func]() {
-            // Spin until main signals ready (ensures affinity is set)
-            while (!ready[t]) {
-                std::this_thread::yield();
-            }
-            for (int i = 0; i < ITERATIONS; i++) {
-                results[t] += func();
-            }
-        });
-
-        // Set affinity immediately after creation, before execution
-        HANDLE thread_handle = threads.back().native_handle();
-        if (!SetThreadAffinityMask(thread_handle, affinity_mask)) {
-            std::cerr << "Failed to set affinity for thread " << t << "\n";
-        }
-    }
-
-    // Start timing and signal threads to begin
-    timer.start();
-    for (int t = 0; t < thread_count; t++) {
-        ready[t] = true; // Release threads
-    }
-
-    // Join threads
-    for (auto& thread : threads) {
-        thread.join();
-    }
-    timer.stop();
-
-    int total_result = 0;
-    for (int t = 0; t < thread_count; t++) {
-        total_result += results[t];
-    }
-
-    return timer.duration<zen::timer::nsec>().count();
-}
-
-int main() {
-    // Warm-up to stabilize CPU frequency
-    for (int i = 0; i < 1000; i++) {
+int main(int argc,char* argv[]) {
+    auto iterations = process_args(argc,argv);
+    // Warm-up to  
+    for (int i = 0; i < iterations; i++) {
         using_ROB();
         not_using_ROB();
     }
 
-    // Single-threaded benchmarks
-    auto single_not_using = benchmark_single_thread(not_using_ROB);
-    auto single_using = benchmark_single_thread(using_ROB);
+    double ROB_disable = benchmark(not_using_ROB,iterations);
+    double ROB_enable = benchmark(using_ROB,iterations);
 
-    // Multi-threaded benchmarks
-    auto multi_not_using = benchmark_multi_thread(not_using_ROB);
-    auto multi_using = benchmark_multi_thread(using_ROB);
-
-    zen::print("Single-threaded not_using_ROB: ", single_not_using,'\n');
-    zen::print("Single-threaded using_ROB: ",single_using,'\n');
-    zen::print("Multi-threaded not_using_ROB: ",multi_not_using,'\n');
-    zen::print("Multi-threaded using_ROB: ",multi_using,'\n');
+    zen::print(zen::color::red(std::format("| {:<24} | {:>12f} ns|\n","Not using ROB time: " , ROB_disable)));
+    zen::print(zen::color::green(std::format("| {:<24} | {:>12f} ns|\n","Using ROB time: " , ROB_enable)));
+    zen::print(zen::color::yellow(std::format("| {:<24} | {:>15.4f}|\n","Speedup Factor:" , ROB_enable / ROB_disable)));
 
     return 0;
 }
