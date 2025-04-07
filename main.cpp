@@ -17,10 +17,10 @@ int process_args(int argc, char* argv[]) {
 
 int not_using_ROB() {
     volatile int a = 5, b = 3, c = 7, d = 2;
-    a *= b;
-    b %= c;
-    c += d;
-    d *= a;
+    a *= d;
+    b %= a;
+    c += b;
+    d *= c;
     return a + b + c + d;
 }
 
