@@ -74,7 +74,7 @@ int main(int argc,char* argv[]) {
 
     double ROB_disable = benchmark(not_using_ROB,5,iterations);
     double ROB_enable = benchmark(using_ROB,5,iterations);
-    double speedup = (ROB_disable - ROB_enable)/1e9;
+    double speedup = ((ROB_disable - ROB_enable)/ROB_disable)* 100;
     zen::print(zen::color::red(std::format("| {:<24} | {:>15.3f} s|\n","Not using ROB time: " , ROB_disable/1e9)));
     zen::print(zen::color::green(std::format("| {:<24} | {:>15.3f} s|\n","Using ROB time: " , ROB_enable/1e9)));
     zen::print(zen::color::yellow(std::format("| {:<24} | {:>15.3f}  s|\n","Speedup Factor:" , speedup)));
