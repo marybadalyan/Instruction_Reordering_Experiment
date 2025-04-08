@@ -3,7 +3,6 @@
 #include "kaizen.h"  
 #include <format>
 #include <stdio.h>
-
 #include <atomic>
 #include <memory>
 
@@ -21,35 +20,28 @@ int process_args(int argc, char* argv[]) {
 
 
 int not_using_ROB(int x) {
-    std::atomic<int> a(x);  // Initialize atomic with input x
+    std::atomic<int> a(x);   
 
-    // Step 1: Multiply by 8
     int current = a.load(std::memory_order_seq_cst);
     int desired;
-    do {
-        desired = current * 8;
-    } while (!a.compare_exchange_strong(current, desired, std::memory_order_seq_cst));
+    
+    desired = current * 8;
 
-    // Step 2: Modulo 9
     current = a.load(std::memory_order_seq_cst);
-    do {
-        desired = current % 9;  // Simplified modulo
-    } while (!a.compare_exchange_strong(current, desired, std::memory_order_seq_cst));
+   
+    desired = current % 9;
 
-    // Step 3: Divide by 2
     current = a.load(std::memory_order_seq_cst);
-    do {
-        desired = current / 2;
-    } while (!a.compare_exchange_strong(current, desired, std::memory_order_seq_cst));
-
+    desired = current / 2;
+    
     return a.load(std::memory_order_seq_cst);
 }
 
 int using_ROB(int x) {
     int  a = x, b = 3, c = 4;
-    a *= 4;
-    b %= 5;
-    c /= 6;
+    a *= 8;
+    b %= 9;
+    c /= 2;
     return a + b + c;
 }
 
