@@ -14,10 +14,11 @@ int process_args(int argc, char* argv[]) {
 
     if (iter_options.empty()) {
         zen::print("Error: --iterations  argument is absent, using default:iterations=1'000'0000\n");
-        return {10000000}; // Increased defaults
+        return 10000000; // Increased defaults
     }
     return std::stoi(iter_options[0]);
 }
+
 
 int not_using_ROB(int x) {
     std::atomic<int> a(x);  // Initialize atomic with input x
@@ -45,11 +46,11 @@ int not_using_ROB(int x) {
 }
 
 int using_ROB(int x) {
-    int a = x;
-    a *= 8;
-    a %= 9;
-    a /= 2;
-    return a;
+    int  a = x, b = 3, c = 4;
+    a *= 4;
+    b %= 5;
+    c /= 6;
+    return a + b + c;
 }
 
 double benchmark(int (*func)(int x),int x,int iterations) {
