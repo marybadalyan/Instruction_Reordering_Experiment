@@ -3,7 +3,7 @@
 #include "kaizen.h"  
 #include <format>
 #include <stdio.h>
-#include <intrin.h>
+
 #include <atomic>
 #include <memory>
 
