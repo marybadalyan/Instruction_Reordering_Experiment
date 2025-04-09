@@ -42,7 +42,7 @@ int using_ROB(int x) {
     a *= 8;
     b %= 9;
     c /= 2;
-    return a + b + c;
+    return a;
 }
 
 double benchmark(int (*func)(int x),int x,int iterations) {
