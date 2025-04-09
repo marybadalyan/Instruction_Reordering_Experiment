@@ -20,20 +20,20 @@ int process_args(int argc, char* argv[]) {
 
 
 int not_using_ROB(int x) {
-    std::atomic<int> a(x);   
+    std::atomic<int> a(x);
 
+    // Step 1: Multiply by 8
     int current = a.load(std::memory_order_seq_cst);
-    int desired;
-    
-    desired = current * 8;
+    a.store(current * 8, std::memory_order_seq_cst);
 
+    // Step 2: Modulo 9
     current = a.load(std::memory_order_seq_cst);
-   
-    desired = current % 9;
+    a.store(current % 9, std::memory_order_seq_cst);
 
+    // Step 3: Divide by 2
     current = a.load(std::memory_order_seq_cst);
-    desired = current / 2;
-    
+    a.store(current / 2, std::memory_order_seq_cst);
+
     return a.load(std::memory_order_seq_cst);
 }
 
